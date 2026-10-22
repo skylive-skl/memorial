@@ -119,6 +119,13 @@ STORAGES = {
     },
 }
 
+# --- Фото ---
+PHOTO_MAX_UPLOAD_BYTES = 20 * 1024 * 1024
+PHOTO_MAX_PER_MEMORIAL = 50
+# Длинная сторона варианта в px (без увеличения маленьких фото).
+PHOTO_VARIANTS = {"thumb": 320, "medium": 1024, "large": 2048}
+PHOTO_WEBP_QUALITY = 82
+
 # --- DRF ---
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",

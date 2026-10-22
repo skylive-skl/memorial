@@ -8,6 +8,12 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   // URL Django заканчиваются на «/»; не даём Next срезать слэш редиректом.
   skipTrailingSlashRedirect: true,
+  experimental: {
+    // Next буферизует тело запроса (по умолчанию 10MB) даже для /api, который proxy.ts
+    // не обрабатывает, и молча обрезает остальное. Фото — до 20MB (PHOTO_MAX_UPLOAD_BYTES)
+    // + запас на multipart.
+    proxyClientMaxBodySize: "25mb",
+  },
   // Браузер ходит только на Next: API и Swagger проксируются на Django (один origin для cookie).
   async rewrites() {
     return [

@@ -2,6 +2,9 @@
 # Переменные берутся из .env (см. .env.example).
 
 x-backend: &backend
+  # Один образ на backend и worker: иначе Compose собирает два, и после
+  # `build backend` worker остаётся со старыми зависимостями.
+  image: memorial-backend:dev
   build:
     context: ./backend
   env_file: .env

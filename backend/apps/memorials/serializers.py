@@ -1,8 +1,65 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError as DjangoValidationError
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
-from apps.memorials.models import Memorial
+from apps.memorials.images import UnsupportedImage, detect_format
+from apps.memorials.models import Memorial, Photo
 from apps.themes.models import Theme
+
+_variants_schema = {
+    "type": "object",
+    "properties": {name: {"type": "string", "format": "uri"} for name in settings.PHOTO_VARIANTS},
+}
+
+
+class PhotoSerializer(serializers.ModelSerializer):
+    variants = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Photo
+        fields = (
+            "id",
+            "original",
+            "variants",
+            "caption",
+            "order",
+            "is_cover",
+            "width",
+            "height",
+            "processing_status",
+            "created_at",
+        )
+        read_only_fields = (
+            "original",
+            "order",
+            "width",
+            "height",
+            "processing_status",
+            "created_at",
+        )
+
+    @extend_schema_field(_variants_schema)
+    def get_variants(self, photo: Photo) -> dict[str, str]:
+        storage = photo.original.storage
+        return {name: storage.url(key) for name, key in photo.variants.items()}
+
+
+class PhotoUploadSerializer(serializers.Serializer):
+    file = serializers.FileField()
+    caption = serializers.CharField(max_length=500, required=False, allow_blank=True)
+
+    def validate_file(self, file):
+        if file.size > settings.PHOTO_MAX_UPLOAD_BYTES:
+            limit_mb = settings.PHOTO_MAX_UPLOAD_BYTES // (1024 * 1024)
+            raise serializers.ValidationError(
+                f"File is too large (max {limit_mb} MB).", code="file_too_large"
+            )
+        try:
+            detect_format(file)
+        except UnsupportedImage as exc:
+            raise serializers.ValidationError(str(exc), code="unsupported_image") from exc
+        return file
 
 
 class MemorialSerializer(serializers.ModelSerializer):
@@ -12,6 +69,7 @@ class MemorialSerializer(serializers.ModelSerializer):
         required=False,
         help_text="Ключ активной темы. При создании без темы — первая активная по sort_order.",
     )
+    photos = PhotoSerializer(many=True, read_only=True)
 
     class Meta:
         model = Memorial
@@ -31,6 +89,7 @@ class MemorialSerializer(serializers.ModelSerializer):
             "short_code",
             "status",
             "published_at",
+            "photos",
             "created_at",
             "updated_at",
         )

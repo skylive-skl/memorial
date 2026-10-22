@@ -1,3 +1,6 @@
+import posixpath
+import uuid
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator
@@ -147,3 +150,55 @@ def _is_short_code_conflict(exc: IntegrityError) -> bool:
     diag = getattr(exc.__cause__, "diag", None)
     constraint = getattr(diag, "constraint_name", "") or ""
     return "short_code" in constraint
+
+
+def new_photo_folder() -> str:
+    return uuid.uuid4().hex
+
+
+def photo_original_path(instance: "Photo", filename: str) -> str:
+    extension = posixpath.splitext(filename)[1].lower() or ".jpg"
+    return f"photos/{instance.folder}/original{extension}"
+
+
+class Photo(models.Model):
+    class ProcessingStatus(models.TextChoices):
+        PENDING = "pending", "Pending"
+        READY = "ready", "Ready"
+        FAILED = "failed", "Failed"
+
+    memorial = models.ForeignKey(Memorial, on_delete=models.CASCADE, related_name="photos")
+    # Случайный префикс в хранилище: бакет открыт на чтение, путь не должен угадываться.
+    folder = models.CharField(max_length=32, default=new_photo_folder, editable=False)
+    # Оригинал хранится всегда и как есть (с EXIF); наружу отдаются только варианты.
+    original = models.ImageField(upload_to=photo_original_path)
+    # {"thumb": key, "medium": key, "large": key} — ключи файлов WebP без EXIF.
+    variants = models.JSONField(default=dict, blank=True)
+    caption = models.CharField(max_length=500, blank=True)
+    order = models.PositiveIntegerField(default=0)
+    is_cover = models.BooleanField(default=False)
+    width = models.PositiveIntegerField(null=True, blank=True)
+    height = models.PositiveIntegerField(null=True, blank=True)
+    processing_status = models.CharField(
+        max_length=10, choices=ProcessingStatus.choices, default=ProcessingStatus.PENDING
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("order", "id")
+        constraints = (
+            models.UniqueConstraint(
+                fields=("memorial",),
+                condition=models.Q(is_cover=True),
+                name="one_cover_per_memorial",
+            ),
+        )
+
+    def __str__(self) -> str:
+        return f"{self.memorial_id}/{self.pk}"
+
+    def storage_keys(self) -> list[str]:
+        return [key for key in (self.original.name, *self.variants.values()) if key]
+
+    def variant_key(self, name: str) -> str:
+        return f"photos/{self.folder}/{name}.webp"
