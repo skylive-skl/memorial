@@ -173,8 +173,9 @@ export function resolveLayout(key: string): LayoutDefinition; // fallback 'class
 
 ## Этап 1. Ядро бэкенда
 
-- [ ] **1.1 Пользователи и авторизация.** Кастомный User, эндпоинты `/auth/*`, JWT в httpOnly cookies, CSRF-защита для cookie-аутентификации.
+- [x] **1.1 Пользователи и авторизация.** Кастомный User, эндпоинты `/auth/*`, JWT в httpOnly cookies, CSRF-защита для cookie-аутентификации.
   - Критерии: тесты на регистрацию, вход, refresh, logout, `me`; неавторизованный доступ к `/memorials/` → 401.
+  - Сделано: `User` без `username`, логин по email (хранится и ищется в нижнем регистре), `preferred_language`, `created_at`; начальная миграция пересоздана (данных не было). Эндпоинты `/auth/register|login|refresh|logout|me/` + служебный `GET /auth/csrf/` (выставляет cookie `csrftoken`). Access — httpOnly cookie на `/`, refresh — httpOnly cookie только на `/api/v1/auth/`; `SameSite=Lax`, `Secure` в prod. Refresh ротируется, старый уходит в blacklist (`token_blacklist`), logout тоже его блеклистит. CSRF (double submit: cookie + `X-CSRFToken`) обязателен для всех изменяющих запросов, включая login/register. По умолчанию `IsAuthenticated` → аноним получает 401. 30 тестов (вкл. CSRF и атрибуты cookie), сценарий проверен вживую через прокси Next. **Тест «`/memorials/` → 401» добавить в 1.6**, когда появится эндпоинт.
 - [ ] **1.2 Модель тем.** `Theme`, `ThemeAsset`, JSON Schema токенов, валидация в `clean()` и сериализаторе, авто-заполнение `layout_key`, инкремент `version`.
   - Критерии: невалидные `tokens` не сохраняются (тесты на несколько видов ошибок), ссылка на несуществующий ассет — ошибка.
 - [ ] **1.3 Админка тем.** Django Admin: inline-ассеты, превью, фильтр по категории и активности, JSON-редактор для `tokens` с понятными ошибками валидации, переводимое `name`.
