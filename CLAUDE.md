@@ -96,6 +96,7 @@ docker compose logs -f backend       # логи сервиса
 docker compose exec backend python manage.py makemigrations
 docker compose exec backend python manage.py migrate
 docker compose exec backend python manage.py createsuperuser
+docker compose exec backend python manage.py seed_themes            # стартовые темы (--update — перезаписать из фикстур)
 docker compose exec backend pytest                 # тесты
 docker compose exec backend ruff check .           # линт
 docker compose exec backend ruff format .          # форматирование

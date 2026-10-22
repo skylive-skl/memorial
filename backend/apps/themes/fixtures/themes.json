@@ -1,0 +1,172 @@
+[
+  {
+    "key": "classic-ivory",
+    "name": { "ru": "Классическая светлая", "uz": "Klassik yorugʻ", "en": "Classic ivory" },
+    "category": "neutral",
+    "sort_order": 10,
+    "assets": [{ "key": "divider", "kind": "ornament", "file": "divider-line.svg" }],
+    "tokens": {
+      "schemaVersion": 1,
+      "layout": "classic",
+      "layoutOptions": { "photoShape": "oval", "gallery": "grid" },
+      "colors": {
+        "background": "#F7F5F0",
+        "surface": "#FFFFFF",
+        "text": "#2B2B2B",
+        "muted": "#7A7468",
+        "accent": "#8C6D3F",
+        "border": "#E2DDD3"
+      },
+      "fonts": { "heading": "Playfair Display", "body": "Inter" },
+      "background": { "type": "color", "asset": null, "value": null, "overlay": null },
+      "ornaments": { "top": null, "divider": "divider", "photoFrame": null },
+      "radius": "12px"
+    }
+  },
+  {
+    "key": "classic-emerald",
+    "name": { "ru": "Изумрудная", "uz": "Zumrad", "en": "Emerald" },
+    "category": "islamic",
+    "sort_order": 20,
+    "assets": [
+      { "key": "bg-pattern", "kind": "background", "file": "islamic-pattern.svg" },
+      { "key": "ornament-top", "kind": "ornament", "file": "islamic-star.svg" },
+      { "key": "divider", "kind": "ornament", "file": "divider-line.svg" }
+    ],
+    "tokens": {
+      "schemaVersion": 1,
+      "layout": "classic",
+      "layoutOptions": { "photoShape": "circle", "gallery": "grid" },
+      "colors": {
+        "background": "#0F3B2E",
+        "surface": "#14493A",
+        "text": "#F3EBD8",
+        "muted": "#B9C7B4",
+        "accent": "#C9A961",
+        "border": "#2E6B57"
+      },
+      "fonts": { "heading": "Cormorant Garamond", "body": "Noto Sans" },
+      "background": { "type": "image", "asset": "bg-pattern", "value": null, "overlay": null },
+      "ornaments": { "top": "ornament-top", "divider": "divider", "photoFrame": null },
+      "radius": "8px"
+    }
+  },
+  {
+    "key": "classic-parchment",
+    "name": { "ru": "Пергамент", "uz": "Pergament", "en": "Parchment" },
+    "category": "christian",
+    "sort_order": 30,
+    "assets": [
+      { "key": "ornament-top", "kind": "ornament", "file": "orthodox-cross.svg" },
+      { "key": "divider", "kind": "ornament", "file": "divider-leaves.svg" }
+    ],
+    "tokens": {
+      "schemaVersion": 1,
+      "layout": "classic",
+      "layoutOptions": { "photoShape": "oval", "gallery": "masonry" },
+      "colors": {
+        "background": "#F4ECDD",
+        "surface": "#FBF6EC",
+        "text": "#3A2E22",
+        "muted": "#85715B",
+        "accent": "#7A2E2E",
+        "border": "#E0D2BA"
+      },
+      "fonts": { "heading": "EB Garamond", "body": "Noto Serif" },
+      "background": {
+        "type": "gradient",
+        "asset": null,
+        "value": "linear-gradient(180deg, #F4ECDD 0%, #EADCC3 100%)",
+        "overlay": null
+      },
+      "ornaments": { "top": "ornament-top", "divider": "divider", "photoFrame": null },
+      "radius": "4px"
+    }
+  },
+  {
+    "key": "gallery-graphite",
+    "name": { "ru": "Графит", "uz": "Grafit", "en": "Graphite" },
+    "category": "secular",
+    "sort_order": 40,
+    "assets": [],
+    "tokens": {
+      "schemaVersion": 1,
+      "layout": "gallery",
+      "layoutOptions": { "galleryStyle": "slider", "descriptionPosition": "side" },
+      "colors": {
+        "background": "#1E1F22",
+        "surface": "#2A2C30",
+        "text": "#ECECEC",
+        "muted": "#9A9DA3",
+        "accent": "#D4B483",
+        "border": "#3A3D42"
+      },
+      "fonts": { "heading": "Montserrat", "body": "Inter" },
+      "background": {
+        "type": "gradient",
+        "asset": null,
+        "value": "radial-gradient(circle at 50% 0%, #2E3035 0%, #1E1F22 70%)",
+        "overlay": null
+      },
+      "ornaments": { "top": null, "divider": null, "photoFrame": null },
+      "radius": "16px"
+    }
+  },
+  {
+    "key": "gallery-mist",
+    "name": { "ru": "Туман", "uz": "Tuman", "en": "Mist" },
+    "category": "neutral",
+    "sort_order": 50,
+    "assets": [{ "key": "divider", "kind": "ornament", "file": "divider-leaves.svg" }],
+    "tokens": {
+      "schemaVersion": 1,
+      "layout": "gallery",
+      "layoutOptions": { "galleryStyle": "masonry", "descriptionPosition": "below" },
+      "colors": {
+        "background": "#EEF1F4",
+        "surface": "#FFFFFF",
+        "text": "#22303C",
+        "muted": "#6B7A88",
+        "accent": "#4F6D8A",
+        "border": "#D5DCE3"
+      },
+      "fonts": { "heading": "Lora", "body": "Noto Sans" },
+      "background": { "type": "color", "asset": null, "value": null, "overlay": null },
+      "ornaments": { "top": null, "divider": "divider", "photoFrame": null },
+      "radius": "12px"
+    }
+  },
+  {
+    "key": "gallery-night-sky",
+    "name": { "ru": "Ночное небо", "uz": "Tungi osmon", "en": "Night sky" },
+    "category": "islamic",
+    "sort_order": 60,
+    "assets": [
+      { "key": "bg-pattern", "kind": "background", "file": "night-pattern.svg" },
+      { "key": "ornament-top", "kind": "ornament", "file": "islamic-star.svg" },
+      { "key": "photo-frame", "kind": "frame", "file": "frame-gold.svg" }
+    ],
+    "tokens": {
+      "schemaVersion": 1,
+      "layout": "gallery",
+      "layoutOptions": { "galleryStyle": "slider", "descriptionPosition": "below" },
+      "colors": {
+        "background": "#101A33",
+        "surface": "#17244A",
+        "text": "#F1E9D2",
+        "muted": "#A9B2C8",
+        "accent": "#E6D3A3",
+        "border": "#2A3A66"
+      },
+      "fonts": { "heading": "Spectral", "body": "Noto Sans" },
+      "background": {
+        "type": "image",
+        "asset": "bg-pattern",
+        "value": null,
+        "overlay": "rgba(16, 26, 51, 0.3)"
+      },
+      "ornaments": { "top": "ornament-top", "divider": null, "photoFrame": "photo-frame" },
+      "radius": "8px"
+    }
+  }
+]
