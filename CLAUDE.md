@@ -84,11 +84,30 @@
 
 ## Команды
 
-> Заполнить после этапа 0.
+Первый запуск: `cp .env.example .env`. Всё запускается в Docker; локально нужны только Docker и (для фронта вне контейнера) Node 22.
 
 ```bash
-docker compose up -d            # вся инфраструктура
-# backend
-# frontend
-# тесты
+docker compose up -d                 # всё: postgres, redis, s3, backend, worker, frontend
+docker compose up -d --build backend worker   # после изменения requirements/
+docker compose ps                    # статусы и healthchecks
+docker compose logs -f backend       # логи сервиса
+
+# backend (в контейнере)
+docker compose exec backend python manage.py makemigrations
+docker compose exec backend python manage.py migrate
+docker compose exec backend python manage.py createsuperuser
+docker compose exec backend pytest                 # тесты
+docker compose exec backend ruff check .           # линт
+docker compose exec backend ruff format .          # форматирование
+
+# frontend (из frontend/, локально)
+npm install
+npm run lint && npm run format:check && npm run typecheck && npm test
+npm run build
 ```
+
+Адреса: фронт http://localhost:3000, API и Swagger через прокси фронта (`/api/v1/`, `/api/docs/`),
+Django Admin http://localhost:8000/admin/, медиа http://localhost:8333/memorial-media/.
+
+CI (GitHub Actions, `.github/workflows/ci.yml`) запускает те же проверки: ruff, проверку
+несозданных миграций (`makemigrations --check`), pytest; ESLint, Prettier, typecheck, Vitest и `next build`.

@@ -166,9 +166,10 @@ export function resolveLayout(key: string): LayoutDefinition; // fallback 'class
 - [x] **0.4 Каркас Next.js.** App Router, TS strict, ESLint, Prettier, Vitest, `next-intl` с ru/uz/en и роутингом `[locale]`, базовый layout кабинета.
   - Критерии: `/ru`, `/uz`, `/en` открываются с переведённой строкой, линт и тесты зелёные.
   - Сделано: Next.js 16.4 (`create-next-app`, `cacheComponents` включён по умолчанию шаблона), TS strict, ESLint + `eslint-config-prettier`, Prettier, Vitest. `next-intl` 4: `src/i18n/{routing,request,navigation}.ts`, локаль читается через `next/root-params`, а маршрутам вне `[locale]` (будущая `/m/[code]`) её можно передать явно. `src/proxy.ts` не трогает `/api` и `/m/...`. `next.config.ts` проксирует `/api/v1/*`, `/api/schema/`, `/api/docs/` на Django с сохранением завершающего «/». Лендинг и базовый layout кабинета (`/[locale]/dashboard`), переводы ru/uz/en, тест на совпадение ключей переводов. Скрипты: `lint`, `typecheck` (с `next typegen`), `test`, `format:check`.
-- [ ] **0.5 CI.** Пайплайн GitHub Actions: lint + tests для backend и frontend.
+- [x] **0.5 CI.** Пайплайн GitHub Actions: lint + tests для backend и frontend.
   - Критерии: пайплайн проходит на чистом репозитории.
-- [ ] **0.6** Заполнить раздел «Команды» в `CLAUDE.md`.
+  - Сделано: `.github/workflows/ci.yml` на push в `main` и PR. Job `backend`: Python 3.12 + uv, сервис Postgres, `ruff check`, `ruff format --check`, `makemigrations --check`, `pytest`. Job `frontend`: Node 22, `npm ci`, ESLint, Prettier, typecheck, Vitest, `next build`. Прогон на `e597bc4` зелёный. `setup-uv` закреплён точной версией: мажорных тегов у него нет.
+- [x] **0.6** Заполнить раздел «Команды» в `CLAUDE.md`.
 
 ## Этап 1. Ядро бэкенда
 
