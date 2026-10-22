@@ -18,6 +18,7 @@ ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])
 CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])
 
 INSTALLED_APPS = [
+    "modeltranslation",  # до django.contrib.admin
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -32,6 +33,7 @@ INSTALLED_APPS = [
     "storages",
     # local
     "apps.accounts",
+    "apps.themes",
 ]
 
 MIDDLEWARE = [
@@ -81,6 +83,9 @@ LANGUAGES = [
     ("uz", "Oʻzbekcha"),
     ("en", "English"),
 ]
+MODELTRANSLATION_DEFAULT_LANGUAGE = "ru"
+MODELTRANSLATION_FALLBACK_LANGUAGES = ("ru",)
+
 TIME_ZONE = "Asia/Tashkent"
 USE_I18N = True
 USE_TZ = True

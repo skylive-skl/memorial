@@ -87,10 +87,15 @@
 ```
 
 Правила:
-- `colors.*` — hex или rgba; все 6 ключей обязательны.
-- `fonts.*` — только из белого списка шрифтов (список хранится в коде фронта и бэка, загружаются через `next/font`).
-- `background.asset`, `ornaments.*` — ключи `ThemeAsset` этой темы или `null`.
-- `layoutOptions` валидируются схемой конкретного layout'а.
+- `colors.*` — hex (`#rgb`, `#rrggbb`, `#rrggbbaa`) или `rgb()`/`rgba()`; все 6 ключей обязательны.
+- `fonts.*` — только из белого списка шрифтов (список хранится в коде фронта и бэка, загружаются через `next/font`). Белый список: Playfair Display, Cormorant Garamond, EB Garamond, Lora, Merriweather, Noto Serif, Spectral, Inter, Montserrat, Noto Sans — все проверены на кириллицу, узбекские `ʻ`/`ʼ` (U+02BB/U+02BC) и ў/қ. Не подходят (нет U+02BB): Roboto, Open Sans, PT Serif, PT Sans, Manrope, Prata.
+- `background.asset`, `ornaments.*` — ключи `ThemeAsset` этой темы или `null`, причём нужного `kind`: `background.asset` → `background`, `ornaments.top`/`divider` → `ornament`, `ornaments.photoFrame` → `frame`. Ключи `ornaments` необязательны.
+- `background`: `type: image` → обязателен `asset`; `type: gradient` → обязателен `value` вида `linear-gradient(...)`/`radial-gradient(...)` без `;`, `{`, `}`, кавычек и `:` (значение попадает в CSS-переменную); `type: color` → `value` — цвет или `null` (тогда берётся `colors.background`). `overlay` — цвет или `null`.
+- `radius` — `0`, `Npx` (до 3 цифр) или `N[.NN]rem`.
+- `layoutOptions` (необязателен) валидируется схемой конкретного layout'а:
+  - `classic`: `photoShape`: `oval | circle | rounded | square`; `gallery`: `grid | masonry`;
+  - `gallery`: `galleryStyle`: `slider | masonry`; `descriptionPosition`: `side | below`.
+- Лишние ключи на любом уровне запрещены (`additionalProperties: false`).
 - Схема живёт в двух местах: `backend/apps/themes/schema.py` (JSON Schema) и `frontend/src/themes/schema.ts` (zod). Должен быть тест, сверяющий, что фикстурные темы проходят обе схемы.
 
 ### Интерфейс layout-компонента (фронт)
@@ -176,8 +181,10 @@ export function resolveLayout(key: string): LayoutDefinition; // fallback 'class
 - [x] **1.1 Пользователи и авторизация.** Кастомный User, эндпоинты `/auth/*`, JWT в httpOnly cookies, CSRF-защита для cookie-аутентификации.
   - Критерии: тесты на регистрацию, вход, refresh, logout, `me`; неавторизованный доступ к `/memorials/` → 401.
   - Сделано: `User` без `username`, логин по email (хранится и ищется в нижнем регистре), `preferred_language`, `created_at`; начальная миграция пересоздана (данных не было). Эндпоинты `/auth/register|login|refresh|logout|me/` + служебный `GET /auth/csrf/` (выставляет cookie `csrftoken`). Access — httpOnly cookie на `/`, refresh — httpOnly cookie только на `/api/v1/auth/`; `SameSite=Lax`, `Secure` в prod. Refresh ротируется, старый уходит в blacklist (`token_blacklist`), logout тоже его блеклистит. CSRF (double submit: cookie + `X-CSRFToken`) обязателен для всех изменяющих запросов, включая login/register. По умолчанию `IsAuthenticated` → аноним получает 401. 30 тестов (вкл. CSRF и атрибуты cookie), сценарий проверен вживую через прокси Next. **Тест «`/memorials/` → 401» добавить в 1.6**, когда появится эндпоинт.
-- [ ] **1.2 Модель тем.** `Theme`, `ThemeAsset`, JSON Schema токенов, валидация в `clean()` и сериализаторе, авто-заполнение `layout_key`, инкремент `version`.
+- [x] **1.2 Модель тем.** `Theme`, `ThemeAsset`, JSON Schema токенов, валидация в `clean()` и сериализаторе, авто-заполнение `layout_key`, инкремент `version`.
   - Критерии: невалидные `tokens` не сохраняются (тесты на несколько видов ошибок), ссылка на несуществующий ассет — ошибка.
+  - Сделано: `apps/themes` — `Theme` (переводимое `name` через modeltranslation: `name_ru` обязателен, fallback на ru), `ThemeAsset` (уникальный `key` в теме, файлы svg/png/jpg/webp). `schema.py`: JSON Schema + схемы `layoutOptions` по layout'ам + проверка ссылок на ассеты (существование и `kind`); ошибки в виде `tokens.colors.text: …`. `save()` всегда отклоняет невалидную структуру, заполняет `layout_key`, увеличивает `version` только при изменении `tokens`. Ссылки на ассеты проверяются в `clean()` и `ThemeSerializer` (не в `save()`: в админке тема сохраняется раньше inline-ассетов — учесть в 1.3). В тестах файлы хранятся в памяти (`conftest.py`), S3 не нужен. 53 теста тем, в т. ч. на CSS-инъекцию через градиент.
+  - Открыто: API каталога `/themes/` и `/themes/{key}/` не закреплён ни за одной задачей — сделать вместе с 1.6 (нужен редактору в 3.5). Удаление ассета, на который ссылаются `tokens`, — запретить в 1.3.
 - [ ] **1.3 Админка тем.** Django Admin: inline-ассеты, превью, фильтр по категории и активности, JSON-редактор для `tokens` с понятными ошибками валидации, переводимое `name`.
   - Критерии: тему можно создать полностью через админку.
 - [ ] **1.4 Фикстуры тем.** Management command `seed_themes`: 2 layout'а × 3–4 оформления (минимум 6 тем, разные категории) с ассетами-заглушками.
