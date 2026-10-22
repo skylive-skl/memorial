@@ -67,7 +67,9 @@ class Theme(models.Model):
 
     def clean(self) -> None:
         super().clean()
-        self.validate_tokens(self.asset_kinds())
+        # Админка выставляет флаг и проверяет ссылки по данным inline-формсета.
+        deferred = getattr(self, "defer_asset_refs_check", False)
+        self.validate_tokens(None if deferred else self.asset_kinds())
 
     def validate_tokens(self, asset_kinds: dict[str, str] | None = None) -> None:
         """Структура tokens; при переданных `asset_kinds` — ещё и ссылки на ассеты."""
