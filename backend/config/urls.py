@@ -5,7 +5,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from config.views import health
 
 api_v1 = [
-    # Эндпоинты приложений подключаются здесь (этап 1).
+    path("auth/", include("apps.accounts.urls")),
 ]
 
 urlpatterns = [

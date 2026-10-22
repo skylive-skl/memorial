@@ -31,7 +31,7 @@ jobs:
           --health-retries 10
     env:
       DJANGO_SETTINGS_MODULE: config.settings.dev
-      DJANGO_SECRET_KEY: ci-secret
+      DJANGO_SECRET_KEY: ci-only-insecure-secret-key-0123456789abcdef
       DATABASE_URL: postgres://memorial:memorial@localhost:5432/memorial
       REDIS_URL: redis://localhost:6379/0
       CELERY_BROKER_URL: redis://localhost:6379/1
