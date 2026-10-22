@@ -22,5 +22,10 @@ urlpatterns = [
         views.PhotoDetailView.as_view(),
         name="memorial-photo-detail",
     ),
+    path(
+        "public/m/<str:short_code>/",
+        views.PublicMemorialView.as_view(),
+        name="public-memorial",
+    ),
     *router.urls,
 ]

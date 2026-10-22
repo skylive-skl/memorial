@@ -135,3 +135,60 @@ class MemorialSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"theme": "No active themes available."})
             validated_data["theme"] = theme
         return super().create(validated_data)
+
+
+# --- Публичная страница (/public/m/{short_code}/) ---
+# Только то, что нужно для рендера: без владельца, внутренних id, оригиналов фото
+# и служебных полей.
+
+
+class PublicPhotoSerializer(serializers.ModelSerializer):
+    variants = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Photo
+        fields = ("caption", "is_cover", "width", "height", "variants")
+
+    @extend_schema_field(_variants_schema)
+    def get_variants(self, photo: Photo) -> dict[str, str]:
+        storage = photo.original.storage
+        return {name: storage.url(key) for name, key in photo.variants.items()}
+
+
+class ResolvedThemeSerializer(serializers.ModelSerializer):
+    """Тема для рендера: tokens как есть + абсолютные URL ассетов по ключам из tokens."""
+
+    assets = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Theme
+        fields = ("key", "version", "tokens", "assets")
+
+    @extend_schema_field(
+        {"type": "object", "additionalProperties": {"type": "string", "format": "uri"}}
+    )
+    def get_assets(self, theme: Theme) -> dict[str, str]:
+        return {asset.key: asset.file.url for asset in theme.assets.all()}
+
+
+class PublicMemorialSerializer(serializers.ModelSerializer):
+    theme = ResolvedThemeSerializer()
+    photos = PublicPhotoSerializer(many=True, source="ready_photos")
+
+    class Meta:
+        model = Memorial
+        fields = (
+            "short_code",
+            "first_name",
+            "last_name",
+            "middle_name",
+            "birth_date",
+            "birth_date_precision",
+            "death_date",
+            "death_date_precision",
+            "description",
+            "language",
+            "published_at",
+            "theme",
+            "photos",
+        )

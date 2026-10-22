@@ -1,17 +1,24 @@
 from django.conf import settings
 from django.db import transaction
-from django.db.models import Max
+from django.db.models import Max, Prefetch
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, serializers, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.parsers import FormParser, MultiPartParser
+from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from apps.memorials.models import Memorial, Photo
-from apps.memorials.serializers import MemorialSerializer, PhotoSerializer, PhotoUploadSerializer
+from apps.memorials.serializers import (
+    MemorialSerializer,
+    PhotoSerializer,
+    PhotoUploadSerializer,
+    PublicMemorialSerializer,
+)
 from apps.memorials.tasks import process_photo
 
 
@@ -140,3 +147,36 @@ class PhotoReorderView(MemorialPhotosMixin, generics.GenericAPIView):
             photos[photo_id].order = index
         Photo.objects.bulk_update(photos.values(), ["order"])
         return Response(PhotoSerializer(memorial.photos.all(), many=True).data)
+
+
+class PublicMemorialView(generics.RetrieveAPIView):
+    """Опубликованная страница по short_code — для публичной страницы /m/{code}.
+
+    Черновик и несуществующий код дают одинаковый 404: не раскрываем, что страница есть.
+    """
+
+    serializer_class = PublicMemorialSerializer
+    # Без аутентификации: протухшая auth-cookie посетителя не должна давать 401.
+    authentication_classes = ()
+    permission_classes = (AllowAny,)
+    lookup_field = "short_code"
+
+    def get_queryset(self):
+        return (
+            Memorial.objects.filter(status=Memorial.Status.PUBLISHED)
+            .select_related("theme")
+            .prefetch_related(
+                "theme__assets",
+                Prefetch(
+                    "photos",
+                    queryset=Photo.objects.filter(processing_status=Photo.ProcessingStatus.READY),
+                    to_attr="ready_photos",
+                ),
+            )
+        )
+
+    def get_object(self) -> Memorial:
+        try:
+            return super().get_object()
+        except Http404:
+            raise NotFound() from None  # общий текст, без имени модели
