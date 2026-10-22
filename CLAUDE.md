@@ -14,7 +14,7 @@
 
 - **Стек:** Next.js (App Router, TypeScript) + Django + Django REST Framework + PostgreSQL.
 - **Фоновые задачи:** Celery + Redis (обработка фото, генерация QR).
-- **Файлы:** S3-совместимое хранилище (локально MinIO), через `django-storages`.
+- **Файлы:** S3-совместимое хранилище (локально SeaweedFS — образы MinIO больше не публикуются), через `django-storages`.
 - **Языки интерфейса:** ru, uz (латиница), en. Фронт — `next-intl`, бэк — `django-modeltranslation` для переводимых полей тем.
 - **Страницы только для чтения**: никаких комментариев, свечей и т. п. в MVP.
 - **Доступ по ссылке:** страница не индексируется (`noindex`), URL содержит случайный код, а не имя человека.
@@ -54,7 +54,7 @@
 /
 ├── CLAUDE.md
 ├── docs/PLAN.md
-├── docker-compose.yml          # postgres, redis, minio, backend, worker, frontend
+├── docker-compose.yml          # postgres, redis, s3 (SeaweedFS), backend, worker, frontend
 ├── .env.example
 ├── backend/
 │   ├── config/                 # settings (base/dev/prod), urls, celery

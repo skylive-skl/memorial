@@ -11,7 +11,7 @@
 
 - **Backend:** Django + Django REST Framework, PostgreSQL, Celery + Redis
 - **Frontend:** Next.js (App Router, TypeScript), `next-intl` (ru / uz / en)
-- **Файлы:** S3-совместимое хранилище (локально MinIO)
+- **Файлы:** S3-совместимое хранилище (локально SeaweedFS)
 
 Браузер обращается только к Next.js; запросы `/api/v1/*` Next проксирует на Django.
 
@@ -40,7 +40,7 @@ docker compose up -d
 | Backend API | http://localhost:3000/api/v1/ (через прокси Next) |
 | Swagger | http://localhost:3000/api/docs/ |
 | Django Admin | http://localhost:8000/admin/ |
-| MinIO Console | http://localhost:9001 |
+| S3 (SeaweedFS), медиа | http://localhost:8333/memorial-media/... |
 
 > Сервисы появляются по мере выполнения этапа 0 (`docker-compose.yml` — задача 0.2,
 > Django — 0.3, Next.js — 0.4). Команды для тестов и линтеров будут добавлены в
