@@ -1,0 +1,17 @@
+{
+  "Meta": {
+    "title": "Xotira sahifalari"
+  },
+  "Landing": {
+    "title": "Yaqinlaringiz xotirasini saqlang",
+    "subtitle": "Suratlar va hayot tarixi bilan xotira sahifasini yarating hamda uni havola yoki QR-kod orqali ulashing.",
+    "toDashboard": "Kabinetga oʻtish"
+  },
+  "Dashboard": {
+    "brand": "Xotira sahifalari",
+    "title": "Mening sahifalarim",
+    "nav": {
+      "memorials": "Mening sahifalarim"
+    }
+  }
+}

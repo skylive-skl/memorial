@@ -1,0 +1,29 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  line-height: 1.5;
+  color: #1f1f1f;
+  background: #ffffff;
+}
+
+.landing {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 48px 16px;
+}

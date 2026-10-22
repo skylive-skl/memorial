@@ -1,0 +1,17 @@
+{
+  "Meta": {
+    "title": "Memorial pages"
+  },
+  "Landing": {
+    "title": "Preserve the memory of your loved ones",
+    "subtitle": "Create a memorial page with photos and a life story, and share it via a link or a QR code.",
+    "toDashboard": "Go to dashboard"
+  },
+  "Dashboard": {
+    "brand": "Memorial pages",
+    "title": "My pages",
+    "nav": {
+      "memorials": "My pages"
+    }
+  }
+}
