@@ -89,6 +89,7 @@
 ```bash
 docker compose up -d                 # всё: postgres, redis, s3, backend, worker, frontend
 docker compose up -d --build backend worker   # после изменения requirements/
+docker compose restart worker        # после изменения кода Celery-задач (worker сам не перезагружается)
 docker compose ps                    # статусы и healthchecks
 docker compose logs -f backend       # логи сервиса
 

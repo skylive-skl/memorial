@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "storages",
     # local
+    "apps.core",
     "apps.accounts",
     "apps.themes",
     "apps.memorials",
@@ -122,6 +123,10 @@ STORAGES = {
 # --- Публичные ссылки ---
 # QR ведёт на {PUBLIC_BASE_URL}/m/{short_code}; выгравированный адрес менять нельзя.
 PUBLIC_BASE_URL = env("PUBLIC_BASE_URL").rstrip("/")
+
+# --- Ревалидация кеша фронта (apps/core/revalidation.py) ---
+FRONTEND_INTERNAL_URL = env("FRONTEND_INTERNAL_URL").rstrip("/")
+REVALIDATE_SECRET = env("REVALIDATE_SECRET")
 
 # --- Фото ---
 PHOTO_MAX_UPLOAD_BYTES = 20 * 1024 * 1024

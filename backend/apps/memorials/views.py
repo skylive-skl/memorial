@@ -13,6 +13,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from apps.core.revalidation import memorial_tag, schedule_revalidation
 from apps.memorials import qr
 from apps.memorials.models import Memorial, Photo
 from apps.memorials.serializers import (
@@ -174,6 +175,7 @@ class PhotoReorderView(MemorialPhotosMixin, generics.GenericAPIView):
         for index, photo_id in enumerate(ids):
             photos[photo_id].order = index
         Photo.objects.bulk_update(photos.values(), ["order"])
+        schedule_revalidation(memorial_tag(memorial.short_code))  # bulk_update без сигналов
         return Response(PhotoSerializer(memorial.photos.all(), many=True).data)
 
 

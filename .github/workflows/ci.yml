@@ -41,6 +41,8 @@ jobs:
       AWS_S3_ENDPOINT_URL: http://localhost:8333
       MEDIA_PUBLIC_BASE_URL: http://localhost:8333/memorial-media
       PUBLIC_BASE_URL: https://memorial.example
+      FRONTEND_INTERNAL_URL: http://localhost:3000
+      REVALIDATE_SECRET: ci-revalidate-secret
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7

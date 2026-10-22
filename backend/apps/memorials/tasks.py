@@ -3,6 +3,7 @@ import logging
 from celery import shared_task
 from django.core.files.base import ContentFile
 
+from apps.core.revalidation import memorial_tag, schedule_revalidation
 from apps.memorials.images import make_variants
 from apps.memorials.models import Photo
 
@@ -36,3 +37,6 @@ def process_photo(photo_id: int) -> None:
     if not updated:  # фото удалили, пока шла обработка
         for key in keys.values():
             storage.delete(key)
+        return
+    # update() обходит сигналы — сообщаем фронту о готовых вариантах явно.
+    schedule_revalidation(memorial_tag(photo.memorial.short_code))

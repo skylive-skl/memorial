@@ -51,13 +51,17 @@ class Theme(models.Model):
         loaded = getattr(self, "_loaded_tokens", None)
         if self.pk is not None and loaded is not None and loaded != self.tokens:
             self.version += 1
+        # Ключ до сохранения — сигнал ревалидирует и страницы под старым ключом.
+        self._previous_key = getattr(self, "_loaded_key", None)
         super().save(*args, **kwargs)
         self._loaded_tokens = copy.deepcopy(self.tokens)
+        self._loaded_key = self.key
 
     @classmethod
     def from_db(cls, db, field_names, values):
         instance = super().from_db(db, field_names, values)
         instance._loaded_tokens = copy.deepcopy(instance.tokens)
+        instance._loaded_key = instance.key
         return instance
 
     def asset_kinds(self) -> dict[str, str]:
