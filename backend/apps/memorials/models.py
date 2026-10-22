@@ -55,8 +55,7 @@ class Memorial(models.Model):
         return f"{self.last_name} {self.first_name} ({self.short_code})"
 
     def save(self, *args, **kwargs) -> None:
-        self.birth_date = dates.normalize(self.birth_date, self.birth_date_precision)
-        self.death_date = dates.normalize(self.death_date, self.death_date_precision)
+        self.normalize_dates()
         self.validate_dates()
         if self._state.adding:
             self._insert_with_short_code(*args, **kwargs)
@@ -73,9 +72,15 @@ class Memorial(models.Model):
 
     def clean(self) -> None:
         super().clean()
-        self.birth_date = dates.normalize(self.birth_date, self.birth_date_precision)
-        self.death_date = dates.normalize(self.death_date, self.death_date_precision)
+        self.normalize_dates()
         self.validate_dates()
+
+    def normalize_dates(self) -> None:
+        """Приводит даты к виду по точности (год → YYYY-01-01, месяц → YYYY-MM-01)."""
+        for field in ("birth_date", "death_date"):
+            # to_python: как и сам Django, принимаем дату строкой "YYYY-MM-DD".
+            value = self._meta.get_field(field).to_python(getattr(self, field))
+            setattr(self, field, dates.normalize(value, getattr(self, f"{field}_precision")))
 
     def validate_dates(self) -> None:
         errors: dict[str, str] = {}

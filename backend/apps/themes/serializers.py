@@ -1,3 +1,5 @@
+from django.conf import settings
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from apps.themes.models import Theme, ThemeAsset
@@ -13,6 +15,8 @@ class ThemeAssetSerializer(serializers.ModelSerializer):
 
 
 class ThemeSerializer(serializers.ModelSerializer):
+    # Все переводы сразу: язык выбирает фронт. Пустой перевод — русский.
+    name = serializers.SerializerMethodField()
     assets = ThemeAssetSerializer(many=True, read_only=True)
 
     class Meta:
@@ -28,6 +32,18 @@ class ThemeSerializer(serializers.ModelSerializer):
             "assets",
         )
         read_only_fields = ("layout_key", "version", "assets")
+
+    @extend_schema_field(
+        {
+            "type": "object",
+            "properties": {code: {"type": "string"} for code, _ in settings.LANGUAGES},
+            "required": [code for code, _ in settings.LANGUAGES],
+        }
+    )
+    def get_name(self, theme: Theme) -> dict[str, str]:
+        return {
+            code: getattr(theme, f"name_{code}") or theme.name_ru for code, _ in settings.LANGUAGES
+        }
 
     def validate_tokens(self, value):
         errors = validate_tokens(value)

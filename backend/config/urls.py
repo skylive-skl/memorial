@@ -6,6 +6,8 @@ from config.views import health
 
 api_v1 = [
     path("auth/", include("apps.accounts.urls")),
+    path("", include("apps.memorials.urls")),
+    path("", include("apps.themes.urls")),
 ]
 
 urlpatterns = [

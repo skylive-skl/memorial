@@ -132,6 +132,11 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "SCHEMA_PATH_PREFIX": "/api/v1",
+    # Общие наборы значений — одно имя enum в схеме и в сгенерированных типах фронта.
+    "ENUM_NAME_OVERRIDES": {
+        "LanguageEnum": "apps.core.choices.Language",
+        "DatePrecisionEnum": "apps.memorials.dates.DatePrecision",
+    },
 }
 
 # --- Auth: JWT в httpOnly cookies ---

@@ -125,6 +125,7 @@ export function resolveLayout(key: string): LayoutDefinition; // fallback 'class
 
 | Метод | Путь | Описание |
 |---|---|---|
+| GET | `/auth/csrf/` | выставляет cookie `csrftoken` (её значение — в заголовке `X-CSRFToken` всех изменяющих запросов) |
 | POST | `/auth/register/` | регистрация |
 | POST | `/auth/login/` | вход, ставит httpOnly cookies |
 | POST | `/auth/refresh/` | обновление access |
@@ -138,8 +139,8 @@ export function resolveLayout(key: string): LayoutDefinition; // fallback 'class
 | PATCH | `/memorials/{id}/photos/reorder/` | порядок `[id, id, ...]` |
 | PATCH, DELETE | `/memorials/{id}/photos/{photo_id}/` | подпись, cover / удалить |
 | GET | `/memorials/{id}/qr/?format=svg\|png` | QR-код |
-| GET | `/themes/?category=` | каталог активных тем |
-| GET | `/themes/{key}/` | тема с ассетами |
+| GET | `/themes/?category=` | каталог активных тем (публичный) |
+| GET | `/themes/{key}/` | тема с ассетами (публичный); `name` — объект `{ru, uz, en}` |
 | GET | `/public/m/{short_code}/` | опубликованная страница + resolved theme |
 
 - Все «свои» эндпоинты проверяют владельца (чужая страница → 404).
@@ -194,8 +195,9 @@ export function resolveLayout(key: string): LayoutDefinition; // fallback 'class
 - [ ] **1.5 Модель Memorial.** Поля, `short_code` (генерация + неизменяемость), даты с точностью, статусы.
   - Критерии: тест — `short_code` уникален и не меняется ни через модель, ни через API; тесты на валидацию дат (смерть не раньше рождения, нормализация при неполной точности).
   - Сделано: `apps/memorials` — `Memorial` по спецификации; `Language` вынесен в `apps/core/choices.py` (общий для User и Memorial). `short_code`: `secrets`, алфавит из 55 символов, повтор при коллизии (и при гонке на INSERT); задать вручную нельзя; изменение запрещено в `save()` **и триггером PostgreSQL** (миграция 0002 — ловит `QuerySet.update` и raw SQL; проверено мутацией). Даты: нормализация по точности в `save()`/`clean()`; смерть не раньше рождения — сравнение по более грубой точности («май 1950» и «1950 год» совместимы); даты не в будущем. `publish()`/`unpublish()`. 38 тестов. **Тест «`short_code` не меняется через API» — в 1.6** (сериализатора ещё нет).
-- [ ] **1.6 CRUD страниц.** ViewSet с проверкой владельца, publish/unpublish, тема по умолчанию при создании.
+- [x] **1.6 CRUD страниц.** ViewSet с проверкой владельца, publish/unpublish, тема по умолчанию при создании.
   - Критерии: тесты на доступ к чужой странице (404), на переключение темы, на публикацию.
+  - Сделано: `MemorialViewSet` — queryset только своих страниц (чужая → 404 на всех методах, включая publish/unpublish), аноним → 401 (закрыт хвост из 1.1). Тема — по ключу, только активная; по умолчанию — первая активная по `sort_order`; текущая неактивная тема у страницы сохраняется. Язык по умолчанию — `preferred_language` владельца. Только для чтения: `short_code` (закрыт хвост из 1.5: PATCH/PUT его не меняют), `status`, `published_at`, `theme_overrides`. Даты проверяются моделью на итоговом состоянии (в т. ч. при частичном PATCH), модель принимает даты строкой. Плюс каталог тем `/themes/` (`?category=`), `/themes/{key}/` — публичные, только активные, `name` со всеми переводами. OpenAPI без предупреждений, общие enum `LanguageEnum`/`DatePrecisionEnum`. 32 теста API + проверено вживую через прокси Next.
 - [ ] **1.7 Фото.** Загрузка (jpeg/png/webp/heic, лимит размера), сохранение оригинала, Celery-задача: исправление EXIF-ориентации, удаление EXIF-геоданных, варианты `thumb/medium/large` в WebP. Сортировка, cover, удаление вместе с файлами.
   - Критерии: тесты задачи обработки, на единственный cover, на reorder; лимит 50 фото на страницу (51-я загрузка → 400).
 - [ ] **1.8 Публичный API.** `/public/m/{short_code}/`: только `published`, отдаёт данные страницы и resolved theme (tokens + абсолютные URL ассетов).
