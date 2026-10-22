@@ -157,9 +157,10 @@ export function resolveLayout(key: string): LayoutDefinition; // fallback 'class
 - [x] **0.1 Каркас репозитория.** Структура из `CLAUDE.md`, `.gitignore`, `.editorconfig`, `.env.example`, README с запуском.
   - Критерии: структура папок создана, README описывает запуск.
   - Сделано: git-репозиторий (`main`, remote на GitHub), папки backend/frontend/.github по структуре (с `.gitkeep`), `.gitignore` (Python, Node/Next, env, Playwright), `.editorconfig` (2 пробела, 4 для Python), `.env.example` со всеми переменными инфраструктуры, JWT, URL и секретом ревалидации, README с описанием стека и запуска через `docker compose`.
-- [ ] **0.2 Docker Compose.** Сервисы: `postgres`, `redis`, `minio` (+ автосоздание bucket), `backend`, `worker`, `frontend`. Healthchecks.
+- [ ] **0.2 Docker Compose.** Сервисы: `postgres`, `redis`, `s3` на SeaweedFS (+ автосоздание bucket, анонимное чтение), `backend`, `worker`, `frontend`. Healthchecks.
   - Критерии: `docker compose up` поднимает всё, backend и frontend открываются в браузере.
-- [ ] **0.3 Каркас Django.** Проект `config`, настройки base/dev/prod через `django-environ`, DRF, `drf-spectacular`, `django-storages` → MinIO, CORS, Celery, `ruff`, `pytest`.
+  - Статус: `docker-compose.yml` и dev-Dockerfile'ы backend/frontend готовы; postgres, redis, s3 (+ `s3-init`) проверены: healthchecks зелёные, приложение пишет по ключу, аноним только читает бакет (запись и листинг → 403), init идемпотентен. Backend/worker/frontend проверить и закрыть задачу после 0.3–0.4 (backend healthcheck ждёт `/api/health/`).
+- [ ] **0.3 Каркас Django.** Проект `config`, настройки base/dev/prod через `django-environ`, DRF, `drf-spectacular`, `django-storages` → S3 (SeaweedFS), CORS, Celery, `ruff`, `pytest`.
   - Критерии: `/api/docs/` открывается, тестовая Celery-задача выполняется, `pytest` и `ruff check` зелёные.
 - [ ] **0.4 Каркас Next.js.** App Router, TS strict, ESLint, Prettier, Vitest, `next-intl` с ru/uz/en и роутингом `[locale]`, базовый layout кабинета.
   - Критерии: `/ru`, `/uz`, `/en` открываются с переведённой строкой, линт и тесты зелёные.

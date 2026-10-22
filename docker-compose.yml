@@ -1,0 +1,145 @@
+# Локальная разработка: инфраструктура + backend, worker, frontend.
+# Переменные берутся из .env (см. .env.example).
+
+x-backend: &backend
+  build:
+    context: ./backend
+  env_file: .env
+  volumes:
+    - ./backend:/app
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+    s3-init:
+      condition: service_completed_successfully
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # S3-совместимое хранилище (SeaweedFS вместо MinIO: образы MinIO больше не публикуются).
+  # Конфиг доступа генерируется из .env: admin-ключ для приложения,
+  # анонимное чтение только бакета медиа (фото отдаются по прямым URL).
+  s3:
+    image: chrislusf/seaweedfs:4.48
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        cat > /etc/s3.json <<EOF
+        {
+          "identities": [
+            {
+              "name": "app",
+              "credentials": [{"accessKey": "${AWS_ACCESS_KEY_ID}", "secretKey": "${AWS_SECRET_ACCESS_KEY}"}],
+              "actions": ["Admin", "Read", "List", "Tagging", "Write"]
+            },
+            {
+              "name": "anonymous",
+              "actions": ["Read:${AWS_STORAGE_BUCKET_NAME}"]
+            }
+          ]
+        }
+        EOF
+        exec weed server -dir=/data -s3 -s3.port=8333 -s3.config=/etc/s3.json \
+          -master.volumeSizeLimitMB=1024 -volume.max=0
+    ports:
+      - "8333:8333"
+    volumes:
+      - s3-data:/data
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8333/healthz"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Однократно создаёт бакет медиа (идемпотентно).
+  s3-init:
+    image: amazon/aws-cli:2.38.5
+    environment:
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: us-east-1
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >
+        aws --endpoint-url http://s3:8333 s3api head-bucket --bucket ${AWS_STORAGE_BUCKET_NAME} 2>/dev/null
+        || aws --endpoint-url http://s3:8333 s3api create-bucket --bucket ${AWS_STORAGE_BUCKET_NAME}
+    depends_on:
+      s3:
+        condition: service_healthy
+
+  backend:
+    <<: *backend
+    command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health/')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  worker:
+    <<: *backend
+    command: celery -A config worker -l info
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A config inspect ping -d celery@$$HOSTNAME"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+
+  frontend:
+    build:
+      context: ./frontend
+    env_file: .env
+    environment:
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/ru"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  postgres-data:
+  redis-data:
+  s3-data:
