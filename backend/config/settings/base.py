@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     # local
     "apps.accounts",
     "apps.themes",
+    "apps.memorials",
 ]
 
 MIDDLEWARE = [

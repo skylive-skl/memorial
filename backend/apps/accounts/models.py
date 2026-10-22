@@ -3,6 +3,8 @@ from typing import ClassVar
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
+from apps.core.choices import Language
+
 
 class UserManager(BaseUserManager["User"]):
     use_in_migrations = True
@@ -35,11 +37,6 @@ def normalize_email(email: str) -> str:
 
 
 class User(AbstractUser):
-    class Language(models.TextChoices):
-        RU = "ru", "Русский"
-        UZ = "uz", "Oʻzbekcha"
-        EN = "en", "English"
-
     username = None
     email = models.EmailField(unique=True)
     preferred_language = models.CharField(
