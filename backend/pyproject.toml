@@ -1,0 +1,17 @@
+[project]
+name = "memorial-backend"
+version = "0.1.0"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["**/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "DJ", "SIM", "RUF"]
+# Кириллица в комментариях и узбекская «ʻ» в строках — норма для проекта.
+ignore = ["RUF001", "RUF002", "RUF003"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "config"]
