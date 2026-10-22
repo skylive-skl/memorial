@@ -40,6 +40,7 @@ jobs:
       AWS_STORAGE_BUCKET_NAME: memorial-media
       AWS_S3_ENDPOINT_URL: http://localhost:8333
       MEDIA_PUBLIC_BASE_URL: http://localhost:8333/memorial-media
+      PUBLIC_BASE_URL: https://memorial.example
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7

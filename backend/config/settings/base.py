@@ -119,6 +119,10 @@ STORAGES = {
     },
 }
 
+# --- Публичные ссылки ---
+# QR ведёт на {PUBLIC_BASE_URL}/m/{short_code}; выгравированный адрес менять нельзя.
+PUBLIC_BASE_URL = env("PUBLIC_BASE_URL").rstrip("/")
+
 # --- Фото ---
 PHOTO_MAX_UPLOAD_BYTES = 20 * 1024 * 1024
 PHOTO_MAX_PER_MEMORIAL = 50
@@ -131,6 +135,8 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_AUTHENTICATION_CLASSES": ["apps.accounts.authentication.JWTCookieAuthentication"],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    # ?format= занят под формат QR (svg|png), а не под выбор рендерера DRF.
+    "URL_FORMAT_OVERRIDE": None,
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
 }
 

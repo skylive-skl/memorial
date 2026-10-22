@@ -1,9 +1,10 @@
 from django.conf import settings
 from django.db import transaction
 from django.db.models import Max, Prefetch
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework import generics, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, ValidationError
@@ -12,6 +13,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+from apps.memorials import qr
 from apps.memorials.models import Memorial, Photo
 from apps.memorials.serializers import (
     MemorialSerializer,
@@ -45,6 +47,32 @@ class MemorialViewSet(viewsets.ModelViewSet):
         memorial = self.get_object()
         memorial.publish()
         return Response(self.get_serializer(memorial).data)
+
+    @extend_schema(
+        parameters=[OpenApiParameter("format", enum=["svg", "png"], default="svg")],
+        responses={
+            (200, "image/svg+xml"): OpenApiResponse(OpenApiTypes.BINARY),
+            (200, "image/png"): OpenApiResponse(OpenApiTypes.BINARY),
+        },
+    )
+    @action(detail=True, methods=["get"])
+    def qr(self, request: Request, pk: str | None = None) -> HttpResponse:
+        """QR со ссылкой {PUBLIC_BASE_URL}/m/{short_code}: SVG (вектор) или PNG для печати."""
+        memorial = self.get_object()
+        image_format = request.query_params.get("format", "svg")
+        if image_format == "svg":
+            content, content_type = qr.render_svg(memorial.short_code), "image/svg+xml"
+        elif image_format == "png":
+            content, content_type = qr.render_png(memorial.short_code), "image/png"
+        else:
+            raise ValidationError({"format": "Expected 'svg' or 'png'."})
+        response = HttpResponse(content, content_type=content_type)
+        response["Content-Disposition"] = (
+            f'inline; filename="memorial-{memorial.short_code}-qr.{image_format}"'
+        )
+        # short_code неизменяем — QR тоже; private: эндпоинт только для владельца.
+        response["Cache-Control"] = "private, max-age=86400"
+        return response
 
     @extend_schema(request=None, responses=MemorialSerializer)
     @action(detail=True, methods=["post"])
